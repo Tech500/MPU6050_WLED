@@ -6,7 +6,7 @@
     
 */
 
-#include <ESP8266WiFi.h>
+#include <WiFi.h>
 #include <LittleFS.h>
 #include <FTPServer.h>
 #include <Adafruit_MPU6050.h>
@@ -195,9 +195,9 @@ void logtoFile(){
 
     float scaled = 0.07782219916379;
     
-    float scaled_x = accel.acceleration.x * scaled * 25000;
-    float scaled_y = accel.acceleration.y * scaled * 25000;
-    float scaled_z = accel.acceleration.z * scaled * 6000;  
+    float scaled_x = accel.acceleration.x * scaled * 25000;   //25000 "feedback gain"
+    float scaled_y = accel.acceleration.y * scaled * 25000;   //25000 "feedback gain"
+    float scaled_z = accel.acceleration.z * scaled * 6000;    //6000  "feedback gain"
 
     float raw_x = accel.acceleration.x;
     float raw_y = accel.acceleration.y;
