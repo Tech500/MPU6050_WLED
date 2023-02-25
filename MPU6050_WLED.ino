@@ -1,20 +1,25 @@
 //Modified_Testing_MPU6050.ino
 /*
-    Developed by William Lucid with an assist from OpenAI's ChatGPT 02/24/2023
-    Sketch was developed to generate varialble for effects, Intensity, and color palette variables of WLED project.
-    Plan is to have a wand/paddle with the MPU6050 attached; the a user cold "wave" the wand/paddle effecting changing strip led lighting "patterens.
+    Developed by William Lucid with an assist from OpenAI's ChatGPT 02/24/2023  Only partially finished; has not been added directly to running WLED, project 
+    is a work-in-progress.  Will need a usermod to be added and compiled for WLED.  Sketch was developed to generate varialbles for effects, Intensity, and color 
+    palette variables of WLED project.  WLED Project:  https://kno.wled.ge/  
+    
+    WLED "List of Effects and Palettes":  https://github.com/Aircoookie/WLED/wiki/List-of-effects-and-palettes 
+
+    Plan is to use a wand/paddle with the MPU6050 attached; user could "wave" the wand/paddle effecting changes to strip led, WLED "effects," "intensity," and
+    "color Palette."
     
 */
 
-#include <WiFi.h>
+#include <ESP8266WiFi.h>
 #include <LittleFS.h>
 #include <FTPServer.h>
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_Sensor.h>
 #include <Wire.h>
 
-const char * ssid = "SSID";
-const char * password = "PASSWORD";
+const char * ssid = "R2D2";
+const char * password = "sissy4357";
 
 //Server settings
 #define ipaddress {10,0,0,23}
@@ -81,7 +86,7 @@ void setup(void) {
   }
   
   mpu.setAccelerometerRange(MPU6050_RANGE_16_G);
-    log.print("Accelerometer range set to: ");
+    log.print("  Accelerometer range set to: ");
   switch (mpu.getAccelerometerRange()) {
   case MPU6050_RANGE_2_G:
     log.print("+-2G");
@@ -174,10 +179,7 @@ void loop() {
       exit;
   }
 
-  //flag = 1;
-
-  // this is all you need
-  // make sure to call handleFTP() frequently
+  // Make sure to call handleFTP() frequently
   ftpSrv.handleFTP();    
   
 }
@@ -193,11 +195,11 @@ void logtoFile(){
     mpu_accel->getEvent(&accel);
     mpu_gyro->getEvent(&gyro);
 
-    float scaled = 0.07782219916379;
+    float scaled = 0.07782219916379;  // Scaling factor 255/32767
     
-    float scaled_x = accel.acceleration.x * scaled * 25000;   //25000 "feedback gain"
-    float scaled_y = accel.acceleration.y * scaled * 25000;   //25000 "feedback gain"
-    float scaled_z = accel.acceleration.z * scaled * 6000;    //6000  "feedback gain"
+    float scaled_x = accel.acceleration.x * scaled * 25000;  // 25000, 25000, and 6000 act as "feedback gain."
+    float scaled_y = accel.acceleration.y * scaled * 25000;
+    float scaled_z = accel.acceleration.z * scaled * 6000;  
 
     float raw_x = accel.acceleration.x;
     float raw_y = accel.acceleration.y;
@@ -266,19 +268,19 @@ void wifi_Start()
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
   delay(100);
-  
+ 
   Serial.println();
   Serial.print("MAC: ");
   Serial.println(WiFi.macAddress());
 
-  //Start by connecting to a WiFi network
+  // We start by connecting to a WiFi network
   Serial.print("Connecting to ");
 
   Serial.println(ssid);
 
   WiFi.begin(ssid, password);
   
-  //Setting static addresses
+  //setting static addresses
   IPAddress ip;
   IPAddress gateway;
   IPAddress subnet;
