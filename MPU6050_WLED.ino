@@ -18,8 +18,8 @@
 #include <Adafruit_Sensor.h>
 #include <Wire.h>
 
-const char * ssid = "R2D2";
-const char * password = "sissy4357";
+const char * ssid = "SSID";
+const char * password = "PASSWORD";
 
 //Server settings
 #define ipaddress {10,0,0,23}
