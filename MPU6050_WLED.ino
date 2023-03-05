@@ -1,6 +1,6 @@
 
 /*
-    Developed by William Lucid with an assist from OpenAI's ChatGPT 02/24/2023  Only partially finished; has not been added directly to running WLED, project 
+    Developed by William Lucid with an assist from OpenAI's, ChatGPT.  Only partially finished; has not been added directly to running WLED, project 
     is a work-in-progress.  Will need a usermod to be added and compiled for WLED.  Sketch was developed to generate varialbles for effects, Intensity, and color 
     palette variables of WLED project.  WLED Project:  https://kno.wled.ge/  WLED runs on ESP8266 or ESP32.
     
@@ -8,6 +8,11 @@
 
     Plan is to use a wand/paddle with the MPU6050 attached; user could "wave" the wand/paddle effecting changes to strip led, WLED "effects," "intensity," and
     "color Palette."
+	
+    Created for use with Athom ESP32 Music Controller and ESP32  running this Sketch.  Both devices are connect by WiFi; ESP32 sends URL Strings using HTTPClient. 
+    Sketch is Interrupt driven.
+	
+    03/05/2023 @ 16:00 EST
     
 */
 
@@ -25,13 +30,21 @@
 #include <Adafruit_Sensor.h>
 #include <Wire.h>
 
-const char* ssid = "R2D2";
-const char* password = "sissy4357";
+const char* ssid = "YOURSSID";
+const char* password = "YOURPASSWORD";
 
 WiFiClient client;
 
 Adafruit_MPU6050 mpu;
 Adafruit_Sensor *mpu_temp, *mpu_accel, *mpu_gyro;
+
+const uint8_t interruptPin = 4;
+
+volatile bool motionDetected = false;
+
+void IRAM_ATTR handleInterrupt() {
+  motionDetected = true;
+}
 
 // tell the FtpServer to use LittleFS
 FTPServer ftpSrv(LittleFS);
@@ -43,16 +56,18 @@ const int port = 80;
 WiFiServer server1(port);
 
 int flag = 1;
+int effectsFlag;
 int count = 1;
 int pass_value = 0;
 int url_index = 0;
 int palette = 0;
 int start_palette = 0;
 int httpCode;
+int effects, intensity, colors;
 
 // Define the FX names and URLs
-String FX_names[] = {
-	  "Off",
+String effect_Names[] = {
+  "Off",
   "Static",
   "Blink",
   "Breathe",
@@ -160,191 +175,227 @@ String FX_names[] = {
 };
 
 String urls[] = {
-    //Boucing Balls  --url_index 0
-
-    "/win&A=128&CL=hFFA000&C2=h000000&FX=91&SX=128&IX=128&C1=128&C2=128&C3=128&FP=0",
-
-
-    // Chase Rainbow  --url_index 1
-
-    "/win&A=128&CL=hFFA000&C2=h000000&FX=30&SX=128&IX=128&C1=128&C2=128&C3=128&FP=0",
+  //Boucing Balls
+  "/win&A=128&CL=hFFA000&C2=h000000&FX=91&SX=128&IX=128&C1=128&C2=128&C3=128&FP=0",
 
 
-    // Fireworks  --url_index 2
-
-    "/win&A=128&CL=hFFA000&C2=h000000&FX=42&SX=96&IX=192&C1=128&C2=128&C3=128&FP=11",
-
-    // Boucing Balls  --url_index 3
-
-    "/win&A=128&CL=hFFA000&C2=h000000&FX=91&SX=128&IX=128&C1=128&C2=128&C3=128&FP=0",
+  // Chase Rainbow
+  "/win&A=128&CL=hFFA000&C2=h000000&FX=30&SX=128&IX=128&C1=128&C2=128&C3=128&FP=0",
 
 
-    // Chase Rainbow  --url_index 4
+  // Fireworks
+  "/win&A=128&CL=hFFA000&C2=h000000&FX=42&SX=96&IX=192&C1=128&C2=128&C3=128&FP=11",
 
-    "/win&A=128&CL=hFFA000&C2=h000000&FX=30&SX=128&IX=128&C1=128&C2=128&C3=128&FP=0"      
-	
+  // Boucing Balls
+  "/win&A=128&CL=hFFA000&C2=h000000&FX=91&SX=128&IX=128&C1=128&C2=128&C3=128&FP=0",
+
+
+  // Chase Rainbow
+  "/win&A=128&CL=hFFA000&C2=h000000&FX=30&SX=128&IX=128&C1=128&C2=128&C3=128&FP=0"
+
 };
 
 // &A  0 - 255 Controls master brightness
-// &FX 0 - 255 Controls speed of the FX  
+// &FX 0 - 255 Controls speed of the FX
 // &IX 0 - 255 Controls IX
 // &FP 0 - 46  Conrols Color Palette
 
 String FX_name;
+String effect_name;
 
 int FX, IX, FP, seconds;
 
 // Define functions to generate random values
 long random_fx() {
-   FX = random(101);
-   return(FX);
+  FX = random(101);
+  return (FX);
 }
 
 long random_fp() {
   FP = random(46);
-  return(FP);
+  return (FP);
 }
 
 long random_seconds() {
-	seconds = random(10, 20);
-	return(seconds);
+  seconds = random(1, 20);
+  return (seconds);
 }
 
 void setup() {
 
-  Serial.begin(115200);
+  Serial.begin(9600);
+
+  while (!Serial) {};
 
 #if defined(ESP8266)
   Wire.begin(4, 5);
 #elif defined(ESP32)
-  Wire.begin(21,22);
+  Wire.begin(21, 22);
 #endif
 
   bool fsok = LittleFS.begin();
-	Serial.printf_P(PSTR("FS init: %s\n"), fsok ? PSTR("ok") : PSTR("fail!"));
+  Serial.printf_P(PSTR("FS init: %s\n"), fsok ? PSTR("ok") : PSTR("fail!"));
 
-	wifi_Start();
+  wifi_Start();
 
-	// setup the ftp server with username and password
-	// ports are defined in FTPCommon.h, default is
-	//   21 for the control connection
-	//   50009 for the data connection (passive mode by default)
-	ftpSrv.begin(F("ftp"), F("ftp")); //username, password for ftp.  set ports in ESP8266FtpServer.h  (default 21, 50009 for PASV)
+  // setup the ftp server with username and password
+  // ports are defined in FTPCommon.h, default is
+  //   21 for the control connection
+  //   50009 for the data connection (passive mode by default)
+  ftpSrv.begin(F("ftp"), F("ftp"));  //username, password for ftp.  set ports in ESP8266FtpServer.h  (default 21, 50009 for PASV)
 
-	Serial.println("Adafruit MPU6050 test!");
+  Serial.println("Adafruit MPU6050 test!");
 
-	// Try to initialize!
-	if (!mpu.begin()) {
-	Serial.println("Failed to find MPU6050 chip");
+  // Try to initialize!
+  if (!mpu.begin()) {
+    Serial.println("Failed to find MPU6050 chip");
     while (1) {
       delay(10);
     }
+  }
+  Serial.println("MPU6050 Found!");
 
-	}
-	Serial.println("MPU6050 Found!"); 
+  //setupt motion detection
+  mpu.setHighPassFilter(MPU6050_HIGHPASS_0_63_HZ);
+  mpu.setMotionDetectionThreshold(2);
+  mpu.setMotionDetectionDuration(200);
+  mpu.setInterruptPinLatch(true);  // Keep it latched.  Will turn off when reinitialized.
+  mpu.setInterruptPinPolarity(true);
+  mpu.setMotionInterrupt(true);
 
-	mpu_temp = mpu.getTemperatureSensor();
-	mpu_temp->printSensorDetails();
+  // Configure interrupt latch to pulse mode
+  mpu.setInterruptPinLatch(true);
 
-	mpu_accel = mpu.getAccelerometerSensor();
-	mpu_accel->printSensorDetails();
+  // Configure ESP32 to listen for MPU6050 interrupt
+  pinMode(interruptPin, INPUT);
+  attachInterrupt(interruptPin, handleInterrupt, CHANGE);
 
-	mpu_gyro = mpu.getGyroSensor();
-	mpu_gyro->printSensorDetails();
 
-	LittleFS.begin();   
+  mpu_temp = mpu.getTemperatureSensor();
+  mpu_temp->printSensorDetails();
+
+  mpu_accel = mpu.getAccelerometerSensor();
+  mpu_accel->printSensorDetails();
+
+  mpu_gyro = mpu.getGyroSensor();
+  mpu_gyro->printSensorDetails();
+
+  LittleFS.begin();
 
   // Open a "log.txt" for appended writing
   File log = LittleFS.open("/MPU6050log.txt", "a");
 
-  if (!log)
-  {
+  if (!log) {
     Serial.println("file '/MPU6050log.txt' open failed");
   }
-  
+
   mpu.setAccelerometerRange(MPU6050_RANGE_16_G);
-    log.print("  Accelerometer range set to: ");
+  log.print("  Accelerometer range set to: ");
   switch (mpu.getAccelerometerRange()) {
-  case MPU6050_RANGE_2_G:
-    log.print("+-2G");
-    break;
-  case MPU6050_RANGE_4_G:
-    log.print("+-4G");
-    break;
-  case MPU6050_RANGE_8_G:
-    log.print("+-8G");
-    break;
-  case MPU6050_RANGE_16_G:
-    log.print("+-16G");
-    break;
+    case MPU6050_RANGE_2_G:
+      log.print("+-2G");
+      break;
+    case MPU6050_RANGE_4_G:
+      log.print("+-4G");
+      break;
+    case MPU6050_RANGE_8_G:
+      log.print("+-8G");
+      break;
+    case MPU6050_RANGE_16_G:
+      log.print("+-16G");
+      break;
   }
 
   mpu.setGyroRange(MPU6050_RANGE_250_DEG);
-    log.print("  Gyro range set to: ");
+  log.print("  Gyro range set to: ");
   switch (mpu.getGyroRange()) {
-  case MPU6050_RANGE_250_DEG:
-    log.print("+- 250 deg/s");
-    break;
-  case MPU6050_RANGE_500_DEG:
-    log.print("+- 500 deg/s");
-    break;
-  case MPU6050_RANGE_1000_DEG:
-    log.print("+- 1000 deg/s");
-    break;
-  case MPU6050_RANGE_2000_DEG:
-    log.print("+- 2000 deg/s");
-    break;
-  } 
+    case MPU6050_RANGE_250_DEG:
+      log.print("+- 250 deg/s");
+      break;
+    case MPU6050_RANGE_500_DEG:
+      log.print("+- 500 deg/s");
+      break;
+    case MPU6050_RANGE_1000_DEG:
+      log.print("+- 1000 deg/s");
+      break;
+    case MPU6050_RANGE_2000_DEG:
+      log.print("+- 2000 deg/s");
+      break;
+  }
 
   mpu.setFilterBandwidth(MPU6050_BAND_5_HZ);
-    log.print("  Filter bandwidth set to: ");
+  log.print("  Filter bandwidth set to: ");
   switch (mpu.getFilterBandwidth()) {
-  case MPU6050_BAND_260_HZ:
-    log.print("260 Hz");
-    break;
-  case MPU6050_BAND_184_HZ:
-    log.print("184 Hz");
-    break;
-  case MPU6050_BAND_94_HZ:
-    log.print("94 Hz");
-    break;
-  case MPU6050_BAND_44_HZ:
-    log.print("44 Hz");
-    break;
-  case MPU6050_BAND_21_HZ:
-    log.print("21 Hz");
-    break;
-  case MPU6050_BAND_10_HZ:
-    log.print("10 Hz");
-    break;
-  case MPU6050_BAND_5_HZ:
-    log.print("5 Hz");
-    break;
+    case MPU6050_BAND_260_HZ:
+      log.print("260 Hz");
+      break;
+    case MPU6050_BAND_184_HZ:
+      log.print("184 Hz");
+      break;
+    case MPU6050_BAND_94_HZ:
+      log.print("94 Hz");
+      break;
+    case MPU6050_BAND_44_HZ:
+      log.print("44 Hz");
+      break;
+    case MPU6050_BAND_21_HZ:
+      log.print("21 Hz");
+      break;
+    case MPU6050_BAND_10_HZ:
+      log.print("10 Hz");
+      break;
+    case MPU6050_BAND_5_HZ:
+      log.print("5 Hz");
+      break;
   }
-      
-  log.println("");
-  log.close(); 
 
-  delay(5000); 
+  log.println("");
+  log.close();
+
+  delay(5000);
 
   server1.begin();
-
 }
 
 void loop() {
-	
-	  MPU6050();
-    
-    // Make sure to call handleFTP() frequently   
-    ftpSrv.handleFTP();    
-    
+
+  for (int x = 1; x < 5000; x++) {
+    ftpSrv.handleFTP();
+  }
+
+  mpu.setMotionDetectionDuration(40);
+
+  if (mpu.getMotionInterruptStatus()) {
+
+    while (motionDetected) {
+      // Handle motion detection event
+      Serial.print("\nMotion detected!");
+      motionDetected = false;
+      pass_value++;
+      motion();
+      mpu.setInterruptPinLatch(false);
+      delay(1000);
+    }
+
+    while (!motionDetected) {
+      // Handle motion detection event
+      Serial.println("\nNo Motion detected!");
+      motionDetected = false;
+      pass_value++;
+      noMotion();
+      mpu.setInterruptPinLatch(false);
+      delay(1000);
+    }
+  }
 }
 
-void MPU6050(){
-       
+void motion() {
+
+  /* Get new sensor events with the readings */
   sensors_event_t accel;
   sensors_event_t gyro;
   sensors_event_t temp;
+
   mpu_temp->getEvent(&temp);
   mpu_accel->getEvent(&accel);
   mpu_gyro->getEvent(&gyro);
@@ -353,244 +404,238 @@ void MPU6050(){
 
   float scaled_x = accel.acceleration.x * scaled * 25000;  // 25000, 25000, and 6000 act as "feedback gain."
   float scaled_y = accel.acceleration.y * scaled * 25000;
-  float scaled_z = accel.acceleration.z * scaled * 6000;  
-  
-  //Effect 
-  int FX = map(scaled_x, 0, 32767, 0, 255);
-      
+  float scaled_z = accel.acceleration.z * scaled * 6000;
+
+  //Effect
+  int effects = map(scaled_x, 0, 32767, 0, 255);
+
   //Intensity
-  int IX = map(scaled_y, 0, 32767, 0, 255);
-      
+  int intensity = map(scaled_y, 0, 32767, 0, 255);
+
   //Color Palette
-  int FP = map(scaled_z, 0, 32767, 0, 255);
-
-  //define MPU6050_Motion and no_Motion <<-----------------------------------------------------
-  while(FX > 2) {  //MPU6050 "wand/paddle" is in use
-      Motion();
-      exit;
-  }
-
-  while(FX < 2){   //MPU6050 "wand/paddle" not in use
-      noMotion();
-      exit;
-  }
-
-}
-
-void Motion(){
-
-  sensors_event_t accel;
-
-  float raw_x = accel.acceleration.x;
-  float raw_y = accel.acceleration.y;
-  float raw_z = accel.acceleration.z;
+  int colors = map(scaled_z, 0, 32767, 0, 255);
 
   // Open a "log.txt" for appended writing
   File log = LittleFS.open("/MPU6050log.txt", "a");
 
-  if (!log){
+  if (!log) {
     Serial.println("file '/MPU6050log.txt' open failed");
   }
-      
+
   /* Log values */
-  log.print("FX:  \t");
-  log.print(abs(FX));
+  log.print("Effects:  \t");
+  log.print(abs(effects));
   log.print(",");
-  log.print("  IX:  \t ");
-  log.print(abs(IX));
+  log.print("  Intensity:  \t ");
+  log.print(abs(intensity));
   log.print(",");
   log.print("  Color Palette:  \t");
-  log.print(FP);
+  log.print(abs(colors));
   log.print("\t\t\t\t");
-  log.print("Raw x:  \t");
-  log.print(abs(raw_x));
-  log.print(",");
-  log.print("  Raw y:  \t");
-  log.print(abs(raw_y));
-  log.print(",");  
-  log.print("  Raw z:  \t");
-  log.print(abs(raw_z));
   log.print("\n");
-  log.close();   
-      
-  /* Print out the values */
-  Serial.print("FX:  \t");
-  Serial.print(abs(FX));
-  Serial.print(",");
-  Serial.print("  IX:  \t");
-  Serial.print(abs(IX));
-  Serial.print(",");  
-  Serial.print("  Color Palette:  \t");
-  Serial.print(FP);
-  Serial.print(",");
-  Serial.print("\t\t\t Raw x:  \t");
-  Serial.print(abs(raw_x));
-  Serial.print(",");
-  Serial.print("  Raw y:  \t");
-  Serial.print(abs(raw_y));
-  Serial.print(",");  
-  Serial.print("  Raw z:  \t");
-  Serial.print(abs(raw_z));
-  Serial.print("\n");
+  log.close();
 
-  delay(500);
-  
-  flag = 3;
+  effect_name = "Chase Rainbow+";
+  //Modify Effect, Intensity, and Color Palette	from MPU6050
+  String url = server + "/win"
+               + "&A=" + String(128)
+               + "&CL=" + "hFFA000"
+               + "&C2=" + "h000000"
+               + "&FX=" + abs(effects)
+               + "&SX=" + String(128)
+               + "&IX=" + abs(intensity)
+               + "&C1=" + String(128)
+               + "&C2=" + String(128)
+               + "&C3=" + String(128)
+               + "&FP=" + abs(colors);
 
+  HTTPClient http;
+#if defined(ESP8266)
+  WiFiClient client;
+  if (http.begin(client, url)) {
+#elif defined(ESP32)
+  if (http.begin(url)) {
+#endif
+    int httpCode = http.GET();
+    seconds = random_seconds();
+    delay(seconds);
+    Serial.print("\nPass_value: " + String(pass_value));
+    Serial.print("  Http Response: ");
+    Serial.print(httpCode);
+    Serial.print("  ");
+    Serial.println(url);
+    Serial.print("URL index: ");
+    Serial.print(String(url_index));
+    Serial.print(" Sleep: ");
+    Serial.print(seconds);
+    Serial.print("   Effect: ");
+    Serial.print(abs(effects));
+    Serial.print(" Intensity: ");
+    Serial.print(abs(intensity));
+    Serial.print(" Color Palette: ");
+    Serial.print(abs(colors));
+    Serial.print("\n");
+    http.end();
+  }
+
+  url_index = url_index++;
+
+  delay(seconds);
 }
 
-void noMotion(){
+void noMotion() {
 
   String effect_name;
 
   //Use predefined url's
-	if (pass_value % 5 == 0) {   //pass_value divided by 5 == 0, increase the divisor for less frequent custom URLs
-      String url = server + urls[url_index];
-      HTTPClient http;
-      #if defined(ESP8266)
-       WiFiClient client;
-       if(http.begin(client, url)){
-      #elif defined(ESP32)
-       if(http.begin(url)){
-      #endif
-      httpCode = http.GET();
+  if (pass_value % 5 == 0) {  //pass_value divided by 5 == 0, increase the divisor for less frequent custom URLs
+    String url = server + urls[url_index];
+    HTTPClient http;
+#if defined(ESP8266)
+    WiFiClient client;
+    http.begin(client, url);
+#elif defined(ESP32)
+    http.begin(url);
+#endif
+    httpCode = http.GET();
+    FP = random_fp();
+    seconds = random_seconds();
+    delay(seconds);
+    Serial.println("Routine %5");
+    Serial.print("Pass_value: " + String(pass_value));
+    Serial.print("  Http Response: ");
+    Serial.print(httpCode);
+    Serial.print("\n");
+    Serial.print(url);
+    Serial.print(" \nEffect: ");
+    Serial.print(effect_Names[FX]);
+    Serial.print(" Sleep: ");
+    Serial.print(seconds);
+    Serial.print(" Color Palette: ");
+    Serial.println(FP);
+    Serial.print("\n");
+    http.end();
+    pass_value = pass_value++;
+    exit;
+
+    //Reset url_index
+    if (url_index == 5) {
+      url_index = 0;
+    }
+
+    url_index = url_index++;
+  }
+
+  //Modify color palette only
+  if (pass_value % 12 == 0) {
+    for (palette = start_palette; palette < 46; palette++) {
       seconds = random_seconds();
-      delay(seconds);
       FP = random_fp();
-      Serial.print("\nPass_value: " + String(pass_value) + "\n");
-      Serial.print("Http Response: ");
+      FP = palette;
+      Serial.print("Pass_value: " + String(pass_value) + "\n");
+
+      //Modify just Color Palette
+      String url = server + "/win"
+                   + "&A=" + String(128)
+                   + "&CL=" + "hFFA000"
+                   + "&C2=" + "h000000"
+                   + "&FX=" + String(30)
+                   + "&SX=" + String(128)
+                   + "&IX=" + String(128)
+                   + "&C1=" + String(128)
+                   + "&C2=" + String(128)
+                   + "&C3=" + String(128)
+                   + "&FP=" + String(FP);
+
+      HTTPClient http;
+#if defined(ESP8266)
+      WiFiClient client;
+      http.begin(client, url);
+#elif defined(ESP32)
+      http.begin(url);
+#endif
+      Serial.print(url);
+      int httpCode = http.GET();
+      int seconds = random_seconds();
+      delay(seconds * 1000);
+      Serial.println("Routine %12");
+      Serial.print("\nPass_value: " + String(pass_value));
+      Serial.print("  Http Response: ");
       Serial.print(httpCode);
-      Serial.print(" URL index: ");
-      Serial.print(url_index);
+      Serial.print(" \nEffect: ");
+      Serial.print("Chase Rainbow+ 2 ");
       Serial.print(" Sleep: ");
       Serial.print(seconds);
       Serial.print(" Color Palette: ");
       Serial.println(FP);
+      Serial.print("\n");
       http.end();
-      }
-      
-      url_index = url_index++;
-      
-	    //Reset url_index
-      if( url_index == 5){
-        url_index = 0;
-      }
-	  
-	    pass_value++;
+      break;
     }
 
-  //Modify color palette only
-	if (pass_value % 12 == 0) {
-	
-    for (palette = start_palette; palette < 46; palette++) {
-		seconds = random_seconds();
-		FP= palette;
-		Serial.print("Pass_value: ");
-		Serial.println(pass_value);
-		Serial.print("Effect: Chase Rainbow+");
-		
-    effect_name = "Chase Rainbow+"; 
-    //Modify just Color Palette
-    String url = server + "/win"
-      + "&A="		+ String(128)
-      + "&CL="  + "hFFA000"
-      + "&C2="	+ "h000000"
-      + "&FX="  + String(30)
-      + "&SX="	+ String(128)
-      + "&IX="	+ String(128)
-      + "&C1="	+ String(128)
-      + "&C2="	+ String(128)
-      + "&C3="	+ String(128)
-      + "&FP="	+ String(FP);
-		
-    HTTPClient http;
-		#if defined(ESP8266)
-      WiFiClient client;
-      if(http.begin(client, url)){
-    #elif defined(ESP32)
-      if(http.begin(url)){
-    #endif
-    Serial.println(url);
-		int httpCode = http.GET();
-		int seconds = random_seconds();
-		delay(seconds * 1000);
-		FP= random_fp();
-		Serial.print("\nPass_value: " + String(pass_value) + "\n"); 
-		Serial.print("Http Response: ");
-		Serial.print(httpCode);
-		Serial.print(" URL index: ");
-		Serial.print(url_index);
-		Serial.print(" Sleep: ");
-		Serial.print(seconds);
-		Serial.print(" Color Palette: ");
-		Serial.println(FP);
-		http.end();
-    }
-
-		url_index = url_index++;
-		pass_value++;
-    }
-  }
-
-	//Modify both effect and color palette
-	if (pass_value % 5 != 0) {
-
-		FX = random_fx();
-		FP = random_fp();
-		seconds = random_seconds();
-			
-    effect_name = "Chase Rainbow+";	
-    //Modify Effect and Color Palette	
-    String url = server + "/win"
-      + "&A="		+ String(128)
-      + "&CL="  + "hFFA000"
-      + "&C2="	+ "h000000"
-      + "&FX="  + String(FX)
-      + "&SX="	+ String(128)
-      + "&IX="	+ String(128)
-      + "&C1="	+ String(128)
-      + "&C2="	+ String(128)
-      + "&C3="	+ String(128)
-      + "&FP="	+ String(FP);
-
-		HTTPClient http;
-		#if defined(ESP8266)
-      WiFiClient client;
-      if(http.begin(client, url)){
-    #elif defined(ESP32)
-      if(http.begin(url)){
-    #endif
-    Serial.println(url);
-		int httpCode = http.GET();
-		delay(seconds);
-		Serial.print("\nPass_value: " + String(pass_value) + "\n");
-		Serial.print("Http Response: ");
-		Serial.print(httpCode);
-		Serial.print(" URL index: ");
-		Serial.print(url_index);
-		Serial.print(" Sleep: ");
-		Serial.print(seconds);
-		Serial.print(" Color Palette: ");
-		Serial.println(FP);
-		http.end();
-    }
-    
     url_index = url_index++;
-		pass_value++;
   }
 
+  //Modify both effect and color palette
+  if (pass_value % 5 != 0) {
+    Serial.println("Routine %5 != 0");
+    FX = random_fx();
+    FP = random_fp();
+    seconds = random_seconds();
+
+    //Modify Effect and Color Palette
+    String url = server + "/win"
+                 + "&A=" + String(128)
+                 + "&CL=" + "hFFA000"
+                 + "&C2=" + "h000000"
+                 + "&FX=" + String(FX)
+                 + "&SX=" + String(128)
+                 + "&IX=" + String(128)
+                 + "&C1=" + String(128)
+                 + "&C2=" + String(128)
+                 + "&C3=" + String(128)
+                 + "&FP=" + String(FP);
+
+    HTTPClient http;
+#if defined(ESP8266)
+    WiFiClient client;
+    http.begin(client, url);
+#elif defined(ESP32)
+    http.begin(url);
+#endif
+    Serial.println(url);
+    int httpCode = http.GET();
+    delay(seconds);
+    Serial.print("Pass_value: " + String(pass_value));
+    Serial.print("  Http Response: ");
+    Serial.print(httpCode);
+    Serial.print(" \nEffect: ");
+    Serial.print("Chase Rainbow+ 3");
+    Serial.print(" Sleep: ");
+    Serial.print(seconds);
+    Serial.print(" Color Palette: ");
+    Serial.println(FP);
+    http.end();
+  }
+
+  url_index = url_index++;
+
+  delay(seconds);
 }
 
-void wifi_Start()
-{
+void wifi_Start() {
 
   WiFi.mode(WIFI_STA);
 
-  //Server settings
-  #define ip {10,0,0,23}
-  #define subnet {255,255,255,0}
-  #define gateway {10,0,0,1}
-  #define dns {10,0,0,1}
+//Server settings
+#define ip \
+  { 10, 0, 0, 23 }
+#define subnet \
+  { 255, 255, 255, 0 }
+#define gateway \
+  { 10, 0, 0, 1 }
+#define dns \
+  { 10, 0, 0, 1 }
 
   //setting the static addresses in function "wifi_Start
   IPAddress ip;
@@ -612,15 +657,12 @@ void wifi_Start()
 
   Serial.printf("Connection result: %d\n", WiFi.waitForConnectResult());
 
-  if(WiFi.status() != WL_CONNECTED)
-  {
-    
+  if (WiFi.status() != WL_CONNECTED) {
+
     wifi_Start();
-    
   }
 
   Serial.println("WiFi Connected");
   Serial.println("local ip");
   Serial.println(WiFi.localIP());
-
 }
