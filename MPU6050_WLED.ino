@@ -1,6 +1,6 @@
 
 /*
-    Developed by William Lucid with an assist from OpenAI's, ChatGPT.  Only partially finished; has not been added directly to running WLED, project 
+    Developed by William Lucid with an assist from OpenAI's ChatGPT 03/06/2023  Only partially finished; has not been added directly to running WLED, project 
     is a work-in-progress.  Will need a usermod to be added and compiled for WLED.  Sketch was developed to generate varialbles for effects, Intensity, and color 
     palette variables of WLED project.  WLED Project:  https://kno.wled.ge/  WLED runs on ESP8266 or ESP32.
     
@@ -9,10 +9,9 @@
     Plan is to use a wand/paddle with the MPU6050 attached; user could "wave" the wand/paddle effecting changes to strip led, WLED "effects," "intensity," and
     "color Palette."
 	
-    Created for use with Athom ESP32 Music Controller and ESP32  running this Sketch.  Both devices are connect by WiFi; ESP32 sends URL Strings using HTTPClient. 
-    Sketch is Interrupt driven.
+	Created for use with Athom ESP32 Music Controller and ESP32  running this Sketch.  /both connect by WiFi; ESP32 sends URL Strinigs using HTTPClient;  Sketch is Interrupt driven.
 	
-    03/05/2023 @ 16:00 EST
+	02/05/2023 @ 16:00 EST
     
 */
 
@@ -257,8 +256,8 @@ void setup() {
 
   //setupt motion detection
   mpu.setHighPassFilter(MPU6050_HIGHPASS_0_63_HZ);
-  mpu.setMotionDetectionThreshold(2);
-  mpu.setMotionDetectionDuration(200);
+  mpu.setMotionDetectionThreshold(4);
+  mpu.setMotionDetectionDuration(20);
   mpu.setInterruptPinLatch(true);  // Keep it latched.  Will turn off when reinitialized.
   mpu.setInterruptPinPolarity(true);
   mpu.setMotionInterrupt(true);
@@ -268,7 +267,7 @@ void setup() {
 
   // Configure ESP32 to listen for MPU6050 interrupt
   pinMode(interruptPin, INPUT);
-  attachInterrupt(interruptPin, handleInterrupt, CHANGE);
+  attachInterrupt(interruptPin, handleInterrupt, RISING);
 
 
   mpu_temp = mpu.getTemperatureSensor();
@@ -363,30 +362,24 @@ void loop() {
     ftpSrv.handleFTP();
   }
 
+  noMotion();
+  pass_value++;
+  Serial.println("\n");
+  delay(1000);
+
   mpu.setMotionDetectionDuration(40);
 
   if (mpu.getMotionInterruptStatus()) {
 
     while (motionDetected) {
       // Handle motion detection event
-      Serial.print("\nMotion detected!");
+      Serial.print("Motion detected!");
       motionDetected = false;
       pass_value++;
       motion();
-      mpu.setInterruptPinLatch(false);
-      delay(1000);
+      delay(100);
     }
-
-    while (!motionDetected) {
-      // Handle motion detection event
-      Serial.println("\nNo Motion detected!");
-      motionDetected = false;
-      pass_value++;
-      noMotion();
-      mpu.setInterruptPinLatch(false);
-      delay(1000);
-    }
-  }
+  }  
 }
 
 void motion() {
@@ -462,7 +455,7 @@ void motion() {
     Serial.print("\nPass_value: " + String(pass_value));
     Serial.print("  Http Response: ");
     Serial.print(httpCode);
-    Serial.print("  ");
+    Serial.print("\n");
     Serial.println(url);
     Serial.print("URL index: ");
     Serial.print(String(url_index));
@@ -474,13 +467,13 @@ void motion() {
     Serial.print(abs(intensity));
     Serial.print(" Color Palette: ");
     Serial.print(abs(colors));
-    Serial.print("\n");
+    Serial.print("\n\n");
     http.end();
   }
 
   url_index = url_index++;
 
-  delay(seconds);
+  delay(10 * 1000);
 }
 
 void noMotion() {
@@ -489,6 +482,7 @@ void noMotion() {
 
   //Use predefined url's
   if (pass_value % 5 == 0) {  //pass_value divided by 5 == 0, increase the divisor for less frequent custom URLs
+    Serial.println("Routine %5");
     String url = server + urls[url_index];
     HTTPClient http;
 #if defined(ESP8266)
@@ -501,7 +495,6 @@ void noMotion() {
     FP = random_fp();
     seconds = random_seconds();
     delay(seconds);
-    Serial.println("Routine %5");
     Serial.print("Pass_value: " + String(pass_value));
     Serial.print("  Http Response: ");
     Serial.print(httpCode);
@@ -528,12 +521,11 @@ void noMotion() {
 
   //Modify color palette only
   if (pass_value % 12 == 0) {
+    Serial.println("Routine %12");
     for (palette = start_palette; palette < 46; palette++) {
       seconds = random_seconds();
       FP = random_fp();
       FP = palette;
-      Serial.print("Pass_value: " + String(pass_value) + "\n");
-
       //Modify just Color Palette
       String url = server + "/win"
                    + "&A=" + String(128)
@@ -554,21 +546,19 @@ void noMotion() {
 #elif defined(ESP32)
       http.begin(url);
 #endif
-      Serial.print(url);
       int httpCode = http.GET();
-      int seconds = random_seconds();
-      delay(seconds * 1000);
-      Serial.println("Routine %12");
-      Serial.print("\nPass_value: " + String(pass_value));
+      Serial.print("Pass_value: " + String(pass_value));
       Serial.print("  Http Response: ");
       Serial.print(httpCode);
+      Serial.print("\n");
+      Serial.print(url);
       Serial.print(" \nEffect: ");
-      Serial.print("Chase Rainbow+ 2 ");
+      Serial.print("Chase Rainbow+  ");
       Serial.print(" Sleep: ");
       Serial.print(seconds);
       Serial.print(" Color Palette: ");
-      Serial.println(FP);
-      Serial.print("\n");
+      Serial.print(FP);
+      Serial.print("\n\n");
       http.end();
       break;
     }
@@ -603,24 +593,26 @@ void noMotion() {
 #elif defined(ESP32)
     http.begin(url);
 #endif
-    Serial.println(url);
     int httpCode = http.GET();
     delay(seconds);
     Serial.print("Pass_value: " + String(pass_value));
     Serial.print("  Http Response: ");
     Serial.print(httpCode);
+    Serial.print("\n");
+    Serial.print(url);
     Serial.print(" \nEffect: ");
-    Serial.print("Chase Rainbow+ 3");
+    Serial.print("Chase Rainbow+  ");
     Serial.print(" Sleep: ");
     Serial.print(seconds);
     Serial.print(" Color Palette: ");
-    Serial.println(FP);
+    Serial.print(FP);
+    Serial.print("\n");
     http.end();
   }
 
   url_index = url_index++;
 
-  delay(seconds);
+  delay(10 * 1000);
 }
 
 void wifi_Start() {
@@ -666,3 +658,4 @@ void wifi_Start() {
   Serial.println("local ip");
   Serial.println(WiFi.localIP());
 }
+
