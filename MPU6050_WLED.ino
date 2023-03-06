@@ -10,7 +10,8 @@
     Plan is to use a wand/paddle with the MPU6050 attached; user could "wave" the wand/paddle effecting changes to strip led, WLED "effects," "intensity," and
     "color Palette."
 	
-	Created for use with Athom ESP32 Music Controller and ESP32  running this Sketch.  /both connect by WiFi; ESP32 sends URL Strinigs using HTTPClient;  Sketch is Interrupt driven.
+    Created for use with Athom ESP32 Music Controller and ESP32  running this Sketch.  /both connect by WiFi; ESP32 sends URL Strinigs using HTTPClient.  
+    Sketch is Interrupt driven.
 		  
 */
 
