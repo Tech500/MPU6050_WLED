@@ -1,4 +1,5 @@
 
+
 /*
     Developed by William Lucid with an assist from OpenAI's ChatGPT 03/06/2023  Only partially finished; has not been added directly to running WLED, project 
     is a work-in-progress.  Will need a usermod to be added and compiled for WLED.  Sketch was developed to generate varialbles for effects, Intensity, and color 
@@ -10,9 +11,7 @@
     "color Palette."
 	
 	Created for use with Athom ESP32 Music Controller and ESP32  running this Sketch.  /both connect by WiFi; ESP32 sends URL Strinigs using HTTPClient;  Sketch is Interrupt driven.
-	
-	02/05/2023 @ 16:00 EST
-    
+		  
 */
 
 #if defined(ESP8266)
@@ -53,6 +52,10 @@ String server = "http://10.0.0.9";
 const int port = 80;
 
 WiFiServer server1(port);
+
+unsigned long previousMillis;
+unsigned long period1 = 20 * 1000;
+unsigned long period2 = 30 * 1000;
 
 int flag = 1;
 int effectsFlag;
@@ -257,7 +260,7 @@ void setup() {
   //setupt motion detection
   mpu.setHighPassFilter(MPU6050_HIGHPASS_0_63_HZ);
   mpu.setMotionDetectionThreshold(4);
-  mpu.setMotionDetectionDuration(20);
+  //mpu.setMotionDetectionDuration(20);
   mpu.setInterruptPinLatch(true);  // Keep it latched.  Will turn off when reinitialized.
   mpu.setInterruptPinPolarity(true);
   mpu.setMotionInterrupt(true);
@@ -357,29 +360,32 @@ void setup() {
 }
 
 void loop() {
+    
+  //static uint8_t tog=0;
+  static uint32_t previousTime = millis();
 
   for (int x = 1; x < 5000; x++) {
     ftpSrv.handleFTP();
   }
 
-  noMotion();
-  pass_value++;
-  Serial.println("\n");
-  delay(1000);
+  unsigned long currentMillis = millis(); // store the current time
+    if (currentMillis - previousMillis >= period1) {
+      pass_value++;
+      noMotion();
+      Serial.println("\n");
+    }
 
   mpu.setMotionDetectionDuration(40);
 
-  if (mpu.getMotionInterruptStatus()) {
-
+  if (mpu.getMotionInterruptStatus()) {    
     while (motionDetected) {
       // Handle motion detection event
       Serial.print("Motion detected!");
       motionDetected = false;
       pass_value++;
       motion();
-      delay(100);
     }
-  }  
+  }
 }
 
 void motion() {
@@ -658,4 +664,3 @@ void wifi_Start() {
   Serial.println("local ip");
   Serial.println(WiFi.localIP());
 }
-
