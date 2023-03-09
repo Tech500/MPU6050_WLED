@@ -1,7 +1,6 @@
-
-
 /*
-    Developed by William Lucid with an assist from OpenAI's ChatGPT 03/06/2023  Only partially finished; has not been added directly to running WLED, project 
+
+    Developed by William Lucid with an assist from OpenAI's ChatGPT 03/08/2023  Only partially finished; has not been added directly to running WLED, project 
     is a work-in-progress.  Will need a usermod to be added and compiled for WLED.  Sketch was developed to generate varialbles for effects, Intensity, and color 
     palette variables of WLED project.  WLED Project:  https://kno.wled.ge/  WLED runs on ESP8266 or ESP32.
     
@@ -12,6 +11,12 @@
 	
     Created for use with Athom ESP32 Music Controller and ESP32  running this Sketch.  /both connect by WiFi; ESP32 sends URL Strinigs using HTTPClient.  
     Sketch is Interrupt driven.
+    
+    This file is used for testing and logging continous "waving" of "paddle" that has the MPU6050 attached; to get  MIN and MAX values of range.  So far; best range of 
+    the goal 0-255 has been:
+    
+    MPU6050 settings:
+    16 G, 250 degrees
 		  
 */
 
@@ -29,7 +34,7 @@
 #include <Adafruit_Sensor.h>
 #include <Wire.h>
 
-const char* ssid = "YOURSSID";
+const char* ssid = "YOURSSID;
 const char* password = "YOURPASSWORD";
 
 WiFiClient client;
@@ -55,8 +60,7 @@ const int port = 80;
 WiFiServer server1(port);
 
 unsigned long previousMillis;
-unsigned long period1 = 20 * 1000;
-unsigned long period2 = 30 * 1000;
+unsigned long period = 50;
 
 int flag = 1;
 int effectsFlag;
@@ -220,7 +224,7 @@ long random_fp() {
 }
 
 long random_seconds() {
-  seconds = random(1, 20);
+  seconds = random(1, 10);
   return (seconds);
 }
 
@@ -264,7 +268,7 @@ void setup() {
   //mpu.setMotionDetectionDuration(20);
   mpu.setInterruptPinLatch(true);  // Keep it latched.  Will turn off when reinitialized.
   mpu.setInterruptPinPolarity(true);
-  mpu.setMotionInterrupt(true);
+  mpu.setMotionInterrupt(true);  //was true
 
   // Configure interrupt latch to pulse mode
   mpu.setInterruptPinLatch(true);
@@ -362,125 +366,131 @@ void setup() {
 
 void loop() {
     
-  //static uint8_t tog=0;
-  static uint32_t previousTime = millis();
-
   for (int x = 1; x < 5000; x++) {
     ftpSrv.handleFTP();
   }
 
-  unsigned long currentMillis = millis(); // store the current time
-    if (currentMillis - previousMillis >= period1) {
-      pass_value++;
-      noMotion();
-      Serial.println("\n");
-    }
-
-  mpu.setMotionDetectionDuration(40);
-
-  if (mpu.getMotionInterruptStatus()) {    
-    while (motionDetected) {
-      // Handle motion detection event
-      Serial.print("Motion detected!");
-      motionDetected = false;
-      pass_value++;
-      motion();
+  if(pass_value == 150){
+    while(1){
+      ftpSrv.handleFTP();
     }
   }
+
+  mpu.setMotionDetectionDuration(2000);
+  
+  //ChromaWand when in motion; keep getting new readings.
+  while(mpu.getMotionInterruptStatus()) { 
+    if(motionDetected){
+      Serial.print("Motion detected!\n");
+      pass_value++;
+      motion();
+      Serial.print("\n");     
+    }
+  }
+
+  //ChromaWand when not in motion; generate random values for FX and FP
+  Serial.print("Motion not detected!\n");
+  pass_value++;
+  noMotion();
+  Serial.print("\n"); 
+  motionDetected = true;
+
 }
 
 void motion() {
 
-  /* Get new sensor events with the readings */
-  sensors_event_t accel;
-  sensors_event_t gyro;
-  sensors_event_t temp;
+  if(mpu.getMotionInterruptStatus()) {
+    /* Get new sensor events with the readings */
+    sensors_event_t accel;
+    sensors_event_t gyro;
+    sensors_event_t temp;
 
-  mpu_temp->getEvent(&temp);
-  mpu_accel->getEvent(&accel);
-  mpu_gyro->getEvent(&gyro);
+    mpu_temp->getEvent(&temp);
+    mpu_accel->getEvent(&accel);
+    mpu_gyro->getEvent(&gyro);
 
-  float scaled = 0.07782219916379;  // Scaling factor 255/32767
+    //float scaled = 0.07782219916379;  // Scaling factor 255/32767
+    float scaled = 0.299782219916379;  // Scaling factor to get closer to goal ranges
 
-  float scaled_x = accel.acceleration.x * scaled * 25000;  // 25000, 25000, and 6000 act as "feedback gain."
-  float scaled_y = accel.acceleration.y * scaled * 25000;
-  float scaled_z = accel.acceleration.z * scaled * 6000;
+    float scaled_x = accel.acceleration.x  * scaled * 12000;  // 25000, 25000, and 6000 act as "feedback gain."
+    float scaled_y = accel.acceleration.y  * scaled * 9000;
+    float scaled_z = accel.acceleration.z  * scaled * 1600;
 
-  //Effect
-  int effects = map(scaled_x, 0, 32767, 0, 255);
+    //Effect
+    int effects = map(scaled_x, 0, 32767, 0, 255);
 
-  //Intensity
-  int intensity = map(scaled_y, 0, 32767, 0, 255);
+    //Intensity
+    int intensity = map(scaled_y, 0, 32767, 0, 255);
 
-  //Color Palette
-  int colors = map(scaled_z, 0, 32767, 0, 255);
+    //Color Palette
+    int colors = map(scaled_z, 0, 32767, 0, 255);
 
-  // Open a "log.txt" for appended writing
-  File log = LittleFS.open("/MPU6050log.txt", "a");
+    // Open a "log.txt" for appended writing
+    File log = LittleFS.open("/MPU6050log.txt", "a");
 
-  if (!log) {
-    Serial.println("file '/MPU6050log.txt' open failed");
-  }
+    if (!log) {
+      Serial.println("file '/MPU6050log.txt' open failed");
+    }
 
-  /* Log values */
-  log.print("Effects:  \t");
-  log.print(abs(effects));
-  log.print(",");
-  log.print("  Intensity:  \t ");
-  log.print(abs(intensity));
-  log.print(",");
-  log.print("  Color Palette:  \t");
-  log.print(abs(colors));
-  log.print("\t\t\t\t");
-  log.print("\n");
-  log.close();
+    /* Log values */
+    log.print("Effects:  \t");
+    log.print(abs(effects));
+    log.print(",");
+    log.print("  Intensity:  \t ");
+    log.print(abs(intensity));
+    log.print(",");
+    log.print("  Color Palette:  \t");
+    log.print(abs(colors));
+    log.print("\t\t\t\t");
+    log.print("\n");
+    log.close();
 
-  effect_name = "Chase Rainbow+";
-  //Modify Effect, Intensity, and Color Palette	from MPU6050
-  String url = server + "/win"
-               + "&A=" + String(128)
-               + "&CL=" + "hFFA000"
-               + "&C2=" + "h000000"
-               + "&FX=" + abs(effects)
-               + "&SX=" + String(128)
-               + "&IX=" + abs(intensity)
-               + "&C1=" + String(128)
-               + "&C2=" + String(128)
-               + "&C3=" + String(128)
-               + "&FP=" + abs(colors);
+    effect_name = "Chase Rainbow+";
+    //Modify Effect, Intensity, and Color Palette	from MPU6050
+    String url = server + "/win"
+                + "&A=" + String(128)
+                + "&CL=" + "hFFA000"
+                + "&C2=" + "h000000"
+                + "&FX=" + abs(effects)
+                + "&SX=" + String(128)
+                + "&IX=" + abs(intensity)
+                + "&C1=" + String(128)
+                + "&C2=" + String(128)
+                + "&C3=" + String(128)
+                + "&FP=" + abs(colors);
 
-  HTTPClient http;
-#if defined(ESP8266)
-  WiFiClient client;
-  if (http.begin(client, url)) {
-#elif defined(ESP32)
-  if (http.begin(url)) {
-#endif
-    int httpCode = http.GET();
-    seconds = random_seconds();
-    delay(seconds);
-    Serial.print("\nPass_value: " + String(pass_value));
-    Serial.print("  Http Response: ");
-    Serial.print(httpCode);
-    Serial.print("\n");
-    Serial.println(url);
-    Serial.print("URL index: ");
-    Serial.print(String(url_index));
-    Serial.print(" Sleep: ");
-    Serial.print(seconds);
-    Serial.print("   Effect: ");
-    Serial.print(abs(effects));
-    Serial.print(" Intensity: ");
-    Serial.print(abs(intensity));
-    Serial.print(" Color Palette: ");
-    Serial.print(abs(colors));
-    Serial.print("\n\n");
-    http.end();
-  }
+    HTTPClient http;
+  #if defined(ESP8266)
+    WiFiClient client;
+    if (http.begin(client, url)) {
+  #elif defined(ESP32)
+    if (http.begin(url)) {
+  #endif
+      int httpCode = http.GET();
+      seconds = random_seconds();
+      delay(seconds);
+      Serial.print("\nPass_value: " + String(pass_value));
+      Serial.print("  Http Response: ");
+      Serial.print(httpCode);
+      Serial.print("\n");
+      Serial.println(url);
+      Serial.print("Effect: ");
+      Serial.print("Custom URL");
+      Serial.print(" Sleep: ");
+      Serial.print(seconds);
+      Serial.print("   Effect: ");
+      Serial.print(abs(effects));
+      Serial.print(" Intensity: ");
+      Serial.print(abs(intensity));
+      Serial.print(" Color Palette: ");
+      Serial.print(abs(colors));
+      Serial.print("\n\n");
+      http.end();
+    }
 
-  url_index = url_index++;
-
-  delay(10 * 1000);
+    url_index = url_index++;
+    }
+    
 }
 
 void noMotion() {
@@ -560,7 +570,7 @@ void noMotion() {
       Serial.print("\n");
       Serial.print(url);
       Serial.print(" \nEffect: ");
-      Serial.print("Chase Rainbow+  ");
+      Serial.print("Custom URL  ");
       Serial.print(" Sleep: ");
       Serial.print(seconds);
       Serial.print(" Color Palette: ");
@@ -608,7 +618,7 @@ void noMotion() {
     Serial.print("\n");
     Serial.print(url);
     Serial.print(" \nEffect: ");
-    Serial.print("Chase Rainbow+  ");
+    Serial.print("Custom URL  ");
     Serial.print(" Sleep: ");
     Serial.print(seconds);
     Serial.print(" Color Palette: ");
@@ -619,7 +629,8 @@ void noMotion() {
 
   url_index = url_index++;
 
-  delay(10 * 1000);
+  delay(2 * 1000);
+  
 }
 
 void wifi_Start() {
@@ -665,3 +676,5 @@ void wifi_Start() {
   Serial.println("local ip");
   Serial.println(WiFi.localIP());
 }
+
+
