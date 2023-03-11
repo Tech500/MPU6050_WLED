@@ -1,6 +1,6 @@
 /*
 
-    Developed by William Lucid with an assist from OpenAI's ChatGPT 03/08/2023  Only partially finished; has not been added directly to running WLED, project 
+    Developed by William Lucid with an assist from OpenAI's ChatGPT 03/11/2023 @ 01:00 EST.  Only partially finished; has not been added directly to running WLED, project 
     is a work-in-progress.  Will need a usermod to be added and compiled for WLED.  Sketch was developed to generate varialbles for effects, Intensity, and color 
     palette variables of WLED project.  WLED Project:  https://kno.wled.ge/  WLED runs on ESP8266 or ESP32.
     
@@ -13,10 +13,12 @@
     Sketch is Interrupt driven.
     
     This file is used for testing and logging continous "waving" of "paddle" that has the MPU6050 attached; to get  MIN and MAX values of range.  So far; best range of 
-    the goal 0-255 has been:
+    the goal 0-255 has been with the following settings:
     
-    MPU6050 settings:
-    16 G, 250 degrees
+    MPU6050 settings:  16 G, 250 degrees, 5 Hz    
+    
+    Named the "paddle/wand" Chromawand.  Chromawand uses touch pin sensor to activate/de-activate motion function.  When de-activated; noMotion function generate 
+    random FX, and FP variables for custom URLs to send via HTTPClient, to the Athom ESP32 controller running WLED.
 		  
 */
 
@@ -34,8 +36,8 @@
 #include <Adafruit_Sensor.h>
 #include <Wire.h>
 
-const char* ssid = "YOURSSID;
-const char* password = "YOURPASSWORD";
+const char* ssid = "R2D2";
+const char* password = "sissy4357";
 
 WiFiClient client;
 
@@ -49,6 +51,10 @@ volatile bool motionDetected = false;
 void IRAM_ATTR handleInterrupt() {
   motionDetected = true;
 }
+
+#define touch_pin_numer T4
+const int value_threshold = 25;  //Any touch_sensor Value below this value; calls motion function
+int touch_sensor_value;
 
 // tell the FtpServer to use LittleFS
 FTPServer ftpSrv(LittleFS);
@@ -265,7 +271,7 @@ void setup() {
   //setupt motion detection
   mpu.setHighPassFilter(MPU6050_HIGHPASS_0_63_HZ);
   mpu.setMotionDetectionThreshold(4);
-  //mpu.setMotionDetectionDuration(20);
+  mpu.setMotionDetectionDuration(20);
   mpu.setInterruptPinLatch(true);  // Keep it latched.  Will turn off when reinitialized.
   mpu.setInterruptPinPolarity(true);
   mpu.setMotionInterrupt(true);  //was true
@@ -372,129 +378,129 @@ void loop() {
 
   if(pass_value == 150){
     while(1){
+      Serial.print("\nFTP is Available now\n\n\n\n");
       ftpSrv.handleFTP();
     }
   }
 
-  mpu.setMotionDetectionDuration(2000);
+  touch_sensor_value = touchRead(touch_pin_numer);
   
-  //ChromaWand when in motion; keep getting new readings.
-  while(mpu.getMotionInterruptStatus()) { 
-    if(motionDetected){
-      Serial.print("Motion detected!\n");
-      pass_value++;
-      motion();
-      Serial.print("\n");     
-    }
+  if(touch_sensor_value < value_threshold)
+  {
+    pass_value++;
+    motion();
+    delay(500);
   }
-
-  //ChromaWand when not in motion; generate random values for FX and FP
-  Serial.print("Motion not detected!\n");
-  pass_value++;
-  noMotion();
-  Serial.print("\n"); 
-  motionDetected = true;
-
+  else{
+    pass_value++;
+    noMotion();
+    delay(500);
+  }
 }
 
 void motion() {
 
-  if(mpu.getMotionInterruptStatus()) {
-    /* Get new sensor events with the readings */
-    sensors_event_t accel;
-    sensors_event_t gyro;
-    sensors_event_t temp;
+  Serial.print("\nTouch Sensor Value:  " + String(touch_sensor_value) + " Motion Detected *********************************");
 
-    mpu_temp->getEvent(&temp);
-    mpu_accel->getEvent(&accel);
-    mpu_gyro->getEvent(&gyro);
 
-    //float scaled = 0.07782219916379;  // Scaling factor 255/32767
-    float scaled = 0.299782219916379;  // Scaling factor to get closer to goal ranges
+  /* Get new sensor events with the readings */
+  sensors_event_t accel;
+  sensors_event_t gyro;
+  sensors_event_t temp;
 
-    float scaled_x = accel.acceleration.x  * scaled * 12000;  // 25000, 25000, and 6000 act as "feedback gain."
-    float scaled_y = accel.acceleration.y  * scaled * 9000;
-    float scaled_z = accel.acceleration.z  * scaled * 1600;
+  mpu_temp->getEvent(&temp);
+  mpu_accel->getEvent(&accel);
+  mpu_gyro->getEvent(&gyro);
 
-    //Effect
-    int effects = map(scaled_x, 0, 32767, 0, 255);
+  //float scaled = 0.07782219916379;  // Scaling factor 255/32767
+  float scaled = 0.299782219916379;  // Scaling factor to get closer to goal ranges
 
-    //Intensity
-    int intensity = map(scaled_y, 0, 32767, 0, 255);
+  float scaled_x = accel.acceleration.x  * scaled * 12000;  // 25000, 25000, and 6000 act as "feedback gain."
+  float scaled_y = accel.acceleration.y  * scaled * 9000;
+  float scaled_z = accel.acceleration.z  * scaled * 1600;
 
-    //Color Palette
-    int colors = map(scaled_z, 0, 32767, 0, 255);
+  //Effect
+  int effects = map(scaled_x, 0, 32767, 0, 255);
 
-    // Open a "log.txt" for appended writing
-    File log = LittleFS.open("/MPU6050log.txt", "a");
+  //Intensity
+  int intensity = map(scaled_y, 0, 32767, 0, 255);
 
-    if (!log) {
-      Serial.println("file '/MPU6050log.txt' open failed");
-    }
+  //Color Palette
+  int colors = map(scaled_z, 0, 32767, 0, 255);
 
-    /* Log values */
-    log.print("Effects:  \t");
-    log.print(abs(effects));
-    log.print(",");
-    log.print("  Intensity:  \t ");
-    log.print(abs(intensity));
-    log.print(",");
-    log.print("  Color Palette:  \t");
-    log.print(abs(colors));
-    log.print("\t\t\t\t");
-    log.print("\n");
-    log.close();
+  // Open a "log.txt" for appended writing
+  File log = LittleFS.open("/MPU6050log.txt", "a");
 
-    effect_name = "Chase Rainbow+";
-    //Modify Effect, Intensity, and Color Palette	from MPU6050
-    String url = server + "/win"
-                + "&A=" + String(128)
-                + "&CL=" + "hFFA000"
-                + "&C2=" + "h000000"
-                + "&FX=" + abs(effects)
-                + "&SX=" + String(128)
-                + "&IX=" + abs(intensity)
-                + "&C1=" + String(128)
-                + "&C2=" + String(128)
-                + "&C3=" + String(128)
-                + "&FP=" + abs(colors);
+  if (!log) {
+    Serial.println("file '/MPU6050log.txt' open failed");
+  }
 
-    HTTPClient http;
-  #if defined(ESP8266)
-    WiFiClient client;
-    if (http.begin(client, url)) {
-  #elif defined(ESP32)
-    if (http.begin(url)) {
-  #endif
-      int httpCode = http.GET();
-      seconds = random_seconds();
-      delay(seconds);
-      Serial.print("\nPass_value: " + String(pass_value));
-      Serial.print("  Http Response: ");
-      Serial.print(httpCode);
-      Serial.print("\n");
-      Serial.println(url);
-      Serial.print("Effect: ");
-      Serial.print("Custom URL");
-      Serial.print(" Sleep: ");
-      Serial.print(seconds);
-      Serial.print("   Effect: ");
-      Serial.print(abs(effects));
-      Serial.print(" Intensity: ");
-      Serial.print(abs(intensity));
-      Serial.print(" Color Palette: ");
-      Serial.print(abs(colors));
-      Serial.print("\n\n");
-      http.end();
-    }
+  /* Log values */
+  log.print("Effects:  \t");
+  log.print(abs(effects));
+  log.print(",");
+  log.print("  Intensity:  \t ");
+  log.print(abs(intensity));
+  log.print(",");
+  log.print("  Color Palette:  \t");
+  log.print(abs(colors));
+  log.print("\t\t\t\t");
+  log.print("\n");
+  log.close();
 
-    url_index = url_index++;
-    }
-    
+  effect_name = "Chase Rainbow+";
+  //Modify Effect, Intensity, and Color Palette	from MPU6050
+  String url = server + "/win"
+              + "&A=" + String(128)
+              + "&CL=" + "hFFA000"
+              + "&C2=" + "h000000"
+              + "&FX=" + abs(effects)
+              + "&SX=" + String(128)
+              + "&IX=" + abs(intensity)
+              + "&C1=" + String(128)
+              + "&C2=" + String(128)
+              + "&C3=" + String(128)
+              + "&FP=" + abs(colors);
+
+  HTTPClient http;
+#if defined(ESP8266)
+  WiFiClient client;
+  if (http.begin(client, url)) {
+#elif defined(ESP32)
+  if (http.begin(url)) {
+#endif
+    int httpCode = http.GET();
+    seconds = random_seconds();
+    delay(seconds);
+    Serial.print("\nPass_value: " + String(pass_value));
+    Serial.print("  Http Response: ");
+    Serial.print(httpCode);
+    Serial.print("\n");
+    Serial.println(url);
+    Serial.print("Effect: ");
+    Serial.print("Custom URL");
+    Serial.print(" Sleep: ");
+    Serial.print(seconds);
+    Serial.print("   Effect: ");
+    Serial.print(abs(effects));
+    Serial.print(" Intensity: ");
+    Serial.print(abs(intensity));
+    Serial.print(" Color Palette: ");
+    Serial.print(abs(colors));
+    Serial.print("\n\n");
+    http.end();
+  }
+
+  url_index = url_index++;
+
+  delay(4 * 1000);
 }
+    
+
 
 void noMotion() {
 
+  Serial.print("\nTouch Sensor Value:  " + String(touch_sensor_value) + " Motion not Detected\n"); 
   String effect_name;
 
   //Use predefined url's
@@ -676,5 +682,7 @@ void wifi_Start() {
   Serial.println("local ip");
   Serial.println(WiFi.localIP());
 }
+
+
 
 
