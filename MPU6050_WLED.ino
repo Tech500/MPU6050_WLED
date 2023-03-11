@@ -1,8 +1,8 @@
 /*
 
-    Developed by William Lucid with an assist from OpenAI's ChatGPT 03/11/2023 @ 01:00 EST.  Only partially finished; has not been added directly to running WLED, project 
-    is a work-in-progress.  Will need a usermod to be added and compiled for WLED.  Sketch was developed to generate varialbles for effects, Intensity, and color 
-    palette variables of WLED project.  WLED Project:  https://kno.wled.ge/  WLED runs on ESP8266 or ESP32.
+    Developed by William Lucid with an assist from OpenAI's ChatGPT 03/11/2023 @ 9:30 EST.  Only partially finished; has not been added directly to running WLED, 
+    project is a work-in-progress.  Will need a usermod to be added and compiled for WLED.  Sketch was developed to generate varialbles for effects, Intensity,
+    and color palette variables of WLED project.  WLED Project:  https://kno.wled.ge/  WLED runs on ESP8266 or ESP32.
     
     WLED "List of Effects and Palettes":  https://github.com/Aircoookie/WLED/wiki/List-of-effects-and-palettes 
 
@@ -376,12 +376,18 @@ void loop() {
     ftpSrv.handleFTP();
   }
 
-  if(pass_value == 150){
-    while(1){
-      Serial.print("\nFTP is Available now\n\n\n\n");
-      ftpSrv.handleFTP();
-    }
-  }
+  while(pass_value == 150){
+    if(flag == 1){
+      for(int x = 1; x < 22;x++){    
+       Serial.print("\n\n\n\n");
+      }
+      Serial.print("\nFTP is Available now");
+      while(flag == 1){
+        ftpSrv.handleFTP();
+      }
+      flag = 0;
+    }    
+  }     
 
   touch_sensor_value = touchRead(touch_pin_numer);
   
