@@ -375,7 +375,8 @@ void loop() {
   for (int x = 1; x < 5000; x++) {
     ftpSrv.handleFTP();
   }
-
+  
+  //--------------- Comment this out in normal use; used in testing ---------------------	
   while(pass_value == 150){
     if(flag == 1){
       for(int x = 1; x < 22;x++){    
@@ -387,7 +388,8 @@ void loop() {
       }
       flag = 0;
     }    
-  }     
+  } 
+  //--------------------------------------------------------------------------------------
 
   touch_sensor_value = touchRead(touch_pin_numer);
   
