@@ -1,0 +1,164 @@
+
+Touch Sensor Value:  65 Motion not Detected
+Routine %5 != 0
+Pass_value: 103  Http Response: 200
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=64&SX=128&IX=128&C1=128&C2=128&C3=128&FP=26 
+Effect: Custom URL   Sleep: 9 Color Palette: 26
+
+Touch Sensor Value:  65 Motion not Detected
+Routine %5 != 0
+Pass_value: 104  Http Response: 200
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=52&SX=128&IX=128&C1=128&C2=128&C3=128&FP=38 
+Effect: Custom URL   Sleep: 7 Color Palette: 38
+
+Touch Sensor Value:  65 Motion not Detected
+Routine %5
+Pass_value: 105  Http Response: 200
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=91&SX=128&IX=128&C1=128&C2=128&C3=128&FP=0 
+Effect: Chase Flash Sleep: 3 Color Palette: 25
+
+
+Touch Sensor Value:  65 Motion not Detected
+Routine %5 != 0
+Pass_value: 106  Http Response: 200
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=81&SX=128&IX=128&C1=128&C2=128&C3=128&FP=10 
+Effect: Custom URL   Sleep: 4 Color Palette: 10
+
+Touch Sensor Value:  65 Motion not Detected
+Routine %5 != 0
+Pass_value: 107  Http Response: 200
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=82&SX=128&IX=128&C1=128&C2=128&C3=128&FP=7 
+Effect: Custom URL   Sleep: 1 Color Palette: 7
+
+Touch Sensor Value:  65 Motion not Detected
+Routine %12
+Pass_value: 108  Http Response: 200
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=30&SX=128&IX=128&C1=128&C2=128&C3=128&FP=0 
+Effect: Custom URL   Sleep: 9 Color Palette: 0
+
+Routine %5 != 0
+Pass_value: 108  Http Response: 200
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=34&SX=128&IX=128&C1=128&C2=128&C3=128&FP=19 
+Effect: Custom URL   Sleep: 5 Color Palette: 19
+
+Touch Sensor Value:  65 Motion not Detected
+Routine %5 != 0
+Pass_value: 109  Http Response: 200
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=56&SX=128&IX=128&C1=128&C2=128&C3=128&FP=28 
+Effect: Custom URL   Sleep: 6 Color Palette: 28
+
+Touch Sensor Value:  65 Motion not Detected
+Routine %5
+Pass_value: 110  Http Response: 200
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=91&SX=128&IX=128&C1=128&C2=128&C3=128&FP=0 
+Effect: Scanner Sleep: 5 Color Palette: 34
+
+
+Touch Sensor Value:  65 Motion not Detected
+Routine %5 != 0
+Pass_value: 111  Http Response: 200
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=97&SX=128&IX=128&C1=128&C2=128&C3=128&FP=26 
+Effect: Custom URL   Sleep: 1 Color Palette: 26
+
+Touch Sensor Value:  65 Motion not Detected
+Routine %5 != 0
+Pass_value: 112  Http Response: 200
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=62&SX=128&IX=128&C1=128&C2=128&C3=128&FP=8 
+Effect: Custom URL   Sleep: 5 Color Palette: 8
+
+Touch Sensor Value:  65 Motion not Detected
+Routine %5 != 0
+Pass_value: 113  Http Response: 200
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=84&SX=128&IX=128&C1=128&C2=128&C3=128&FP=26 
+Effect: Custom URL   Sleep: 1 Color Palette: 26
+
+Touch Sensor Value:  24 Motion Detected *********************************
+Pass_value: 114  Http Response: 200
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=13&SX=128&IX=0&C1=128&C2=128&C3=128&FP=30
+Effect: Custom URL Sleep: 2   Effect: 13 Intensity: 0 Color Palette: 30
+
+
+Touch Sensor Value:  19 Motion Detected *********************************
+Pass_value: 115  Http Response: 200
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=13&SX=128&IX=0&C1=128&C2=128&C3=128&FP=30
+Effect: Custom URL Sleep: 9   Effect: 13 Intensity: 0 Color Palette: 30
+
+
+Touch Sensor Value:  16 Motion Detected *********************************
+Pass_value: 116  Http Response: 200
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=169&SX=128&IX=2&C1=128&C2=128&C3=128&FP=23
+Effect: Custom URL Sleep: 6   Effect: 169 Intensity: 2 Color Palette: 23
+
+
+Touch Sensor Value:  14 Motion Detected *********************************
+Pass_value: 117  Http Response: -11
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=119&SX=128&IX=147&C1=128&C2=128&C3=128&FP=14
+Effect: Custom URL Sleep: 3   Effect: 119 Intensity: 147 Color Palette: 14
+
+
+Touch Sensor Value:  12 Motion Detected *********************************
+Pass_value: 118  Http Response: 200
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=21&SX=128&IX=37&C1=128&C2=128&C3=128&FP=30
+Effect: Custom URL Sleep: 4   Effect: 21 Intensity: 37 Color Palette: 30
+
+
+Touch Sensor Value:  11 Motion Detected *********************************
+Pass_value: 119  Http Response: 200
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=12&SX=128&IX=73&C1=128&C2=128&C3=128&FP=27
+Effect: Custom URL Sleep: 3   Effect: 12 Intensity: 73 Color Palette: 27
+
+
+Touch Sensor Value:  56 Motion not Detected
+Routine %5
+Pass_value: 120  Http Response: 200
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=91&SX=128&IX=128&C1=128&C2=128&C3=128&FP=0 
+Effect: Tracer Sleep: 1 Color Palette: 2
+
+Routine %12
+Pass_value: 120  Http Response: 200
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=30&SX=128&IX=128&C1=128&C2=128&C3=128&FP=0 
+Effect: Custom URL   Sleep: 7 Color Palette: 0
+
+
+Touch Sensor Value:  24 Motion Detected *********************************
+Pass_value: 121  Http Response: 200
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=12&SX=128&IX=67&C1=128&C2=128&C3=128&FP=27
+Effect: Custom URL Sleep: 9   Effect: 12 Intensity: 67 Color Palette: 27
+
+
+Touch Sensor Value:  17 Motion Detected *********************************
+Pass_value: 122  Http Response: 200
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=3&SX=128&IX=90&C1=128&C2=128&C3=128&FP=26
+Effect: Custom URL Sleep: 3   Effect: 3 Intensity: 90 Color Palette: 26
+
+
+Touch Sensor Value:  58 Motion not Detected
+Routine %5 != 0
+Pass_value: 123  Http Response: 200
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=88&SX=128&IX=128&C1=128&C2=128&C3=128&FP=20 
+Effect: Custom URL   Sleep: 7 Color Palette: 20
+
+Touch Sensor Value:  57 Motion not Detected
+Routine %5 != 0
+Pass_value: 124  Http Response: 200
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=28&SX=128&IX=128&C1=128&C2=128&C3=128&FP=0 
+Effect: Custom URL   Sleep: 3 Color Palette: 0
+
+Touch Sensor Value:  65 Motion not Detected
+Routine %5
+Pass_value: 125  Http Response: 200
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=91&SX=128&IX=128&C1=128&C2=128&C3=128&FP=0 
+Effect: Police Sleep: 6 Color Palette: 24
+
+
+Touch Sensor Value:  65 Motion not Detected
+Routine %5 != 0
+Pass_value: 126  Http Response: 200
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=37&SX=128&IX=128&C1=128&C2=128&C3=128&FP=28 
+Effect: Custom URL   Sleep: 5 Color Palette: 28
+
+Touch Sensor Value:  65 Motion not Detected
+Routine %5 != 0
+Pass_value: 127  Http Response: 200
+http://10.0.0.9/win&A=128&CL=hFFA000&C2=h000000&FX=53&SX=128&IX=128&C1=128&C2=128&C3=128&FP=24 
+Effect: Custom URL   Sleep: 2 Color Palette: 24
