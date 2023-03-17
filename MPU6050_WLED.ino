@@ -59,7 +59,7 @@ int touch_sensor_value;
 // tell the FtpServer to use LittleFS
 FTPServer ftpSrv(LittleFS);
 
-// Change the IP address and port number to match your setup
+// Change the IP address and port number to match WLED Controller
 String server = "http://10.0.0.9";
 const int port = 80;
 
