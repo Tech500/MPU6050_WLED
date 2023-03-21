@@ -11,4 +11,4 @@
     Plan is to use a wand/paddle with the MPU6050 attached; user could "wave" the wand/paddle effecting changes 
     to strip led, WLED "effects," "intensity," and "color Palette."
     
-    [View Skketch runniing on Tom Parish's ORB art project](https://www.craft.do/s/uEoH8zY7xPudWD)
+    
