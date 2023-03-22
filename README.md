@@ -11,5 +11,5 @@
     Plan is to use a wand/paddle with the MPU6050 attached; user could "wave" the wand/paddle effecting changes 
     to strip led, WLED "effects," "intensity," and "color Palette."
     
-    [View WLED Controller receiving "Custom" URL links from MPU6050_WLED Sketch]([https://www.craft.do/s/uEoH8zY7xPudWD](https://drive.google.com/file/d/1ep3-D0ZQi7GCA-WQZV0VvKzEiCXjwCIK/view?usp=share_link))
+    [View WLED Controller receiving "Custom" URL links from MPU6050_WLED Sketch](https://www.craft.do/s/uEoH8zY7xPudWD](https://drive.google.com/file/d/1ep3-D0ZQi7GCA-WQZV0VvKzEiCXjwCIK/view?usp=share_link)
     
