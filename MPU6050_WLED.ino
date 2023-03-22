@@ -1,6 +1,6 @@
 /*
 
-    "MPU6050_WLED_with_Deep_Sleep.ino"
+    "MPU6050_WLED.ino"
 
     Developed by William Lucid with an assist from OpenAI's ChatGPT 03/10/2023 @ 01:00 EST.  Only partially finished; has not been added directly to running WLED, project 
     is a work-in-progress.  Will need a usermod to be added and compiled for WLED.  Sketch was developed to generate varialbles for effects, Intensity, and color 
