@@ -1,6 +1,6 @@
 /*
 
-    "MPU6050_WLED_with_Deep_Sleep_Sends_URL_5.ino  03/23/2023 01:52 EDT"
+    "MPU6050_WLED.ino  03/23/2023 01:52 EDT"
 
     Developed by William Lucid with an assist from OpenAI's ChatGPT 03/10/2023 @ 01:00 EST.  Only partially finished; has not been added directly to running WLED, project 
     is a work-in-progress.  Will need a usermod to be added and compiled for WLED.  Sketch was developed to generate varialbles for effects, Intensity, and color 
@@ -245,7 +245,7 @@ void setup() {
 
   while (!Serial) {};
 
-  Serial.print("\n\n\nMPU6050_WLED_with_Deep_Sleep_Sends_URL_5.ino  03/23/2023 01:52 EDT");
+  Serial.print("\n\n\nMPU6050_WLED.ino  03/23/2023 01:52 EDT");
 
   pinMode(LED_PIN, OUTPUT); // configure LED pin as output
   pinMode(TOUCH_PIN, INPUT); // configure touch pin as input
