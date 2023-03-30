@@ -1,7 +1,7 @@
 # MPU6050_WLED
 
 Latest version no longer uses touch features; instead, it uses three switches for better user interface.  Features are nearly the same.  
-Find the latest version in the folder:  MPU6050_WLED_withThree_Switches.  Note:  must use the new variabes.h file; as variable names have changed.
+Find the latest version in the folder:  MPU6050_WLED_withThree_Switches.  Note:  must use the new variables.h file; as variable names have changed.
 First time use; edit variable values to match your network nd configuration.  Version date 03/30/2023 0800 EDT
 
 
