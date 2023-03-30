@@ -34,8 +34,8 @@ int interval6 = 8000;  // Send URL Random Group 4
     }
 */
 
-const char* ssid = "R2D2";
-const char* password = "sissy4357";
+const char* ssid = "yourSSID";
+const char* password = "yourPSSWORD";
 
 unsigned long period = 20 * 1000;  //20 seconds
 
