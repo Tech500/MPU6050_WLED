@@ -4,7 +4,7 @@ Latest version no longer uses touch features; instead, it uses three switches fo
 
 Developed by William Lucid with an assist from OpenAI's ChatGPT.  Only partially finished; 
 has not been added directly to running WLED, project is a work-in-progress.  Will need a usermod to be 
-added and compiled for WLED.  Sketch was developed to generate varialbles for effects, Intensity, and 
+added and compiled for WLED.  Sketch was developed to generate varialbles for effects using MPU6050. Generating Intensity, and 
 color palette variables of WLED project.  [WLED Project](https://kno.wled.ge/)  WLED runs on ESP8266 or 
 ESP32.
 
