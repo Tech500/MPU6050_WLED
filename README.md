@@ -1,7 +1,5 @@
 # MPU6050_WLED
 
-# MPU6050_WLED
-
 Latest version 04/10/2023; "MPU6050_WLED_withFive_Switches.ino" no longer uses touch features; instead, it uses four switches for better user interface. 
 Additionally, a potentiometer is used to adjust delay between sending of URL to WLED Controller.  Features are nearly the same.  Find the latest version 
 in the folder: MPU6050_WLED_withFive_Switches. Note: must use the new variables.h file; as variable names have changed. First time use; edit variable values 
