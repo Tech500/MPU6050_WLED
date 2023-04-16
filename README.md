@@ -3,7 +3,7 @@
 Latest version 04/13/2023; "MPU6050_WLED_withFive_Switches.ino" no longer uses touch features; instead, it uses five switches for better user interface. 
 Additionally, a potentiometer is used to adjust delay between sending of URL to WLED Controller.  Features are nearly the same.  Find the latest version 
 in the folder: MPU6050_WLED_withFive_Switches. Note: must use the new variables.h file; as variable names have changed. First time use; edit variable values 
-to match your network and your configuration.  Find neteork configuration in network.h.
+to match your network and your configuration.  Find netWork configuration in network.h.
 
 Developed by William Lucid with an assist from OpenAI's ChatGPT.  Project is a work-in-progress.  Will need a usermod to be 
 added and compiled for WLED Controller using a MPU6050, Accelerometer Gyroscope Module.  Sketch was developed to generate varialbles for Effects, Intensity, and 
