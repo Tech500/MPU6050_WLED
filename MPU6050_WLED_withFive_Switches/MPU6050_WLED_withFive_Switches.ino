@@ -1,6 +1,6 @@
 /*
 
-    "MPU6050_WLED_withFive_Switches.ino"  04/13/2023 1700 EDT"  Adding Pause for sending of URLs.  Moved switch testing to a standalone sketch.
+    "MPU6050_WLED_withFive_Switches.ino  04/26/2023 10:39 EDT"  Adding Pause for sending of URLs.  Moved switch testing to a standalone sketch.
 
     Developed by William Lucid with an assist from OpenAI's ChatGPT 03/10/2023 @ 01:00 EST.  Only partially finished; has not been added directly to running WLED, project 
     is a work-in-progress.  Will need a usermod to be added and compiled for WLED.  Sketch was developed to generate varialbles for effects, Intensity, and color 
@@ -66,6 +66,7 @@ void switchInterrupt() {
   // Toggle the LED when the switch is pressed
   digitalWrite(ledPin, !digitalRead(ledPin));
 }
+
 int switch5Loop = 0;
 
 // Define the interrupt handler function
@@ -432,6 +433,7 @@ void loop() {
 
   if (toogleSWITCH == 1 &&  sw != 1){
     Serial.println("Interrupt occured\n\n\n");
+    digitalWrite(SWLed, HIGH);
     toogleSWITCH = 0;
   }
 
@@ -499,7 +501,7 @@ void loop() {
     if (switch2State == LOW) {
       Serial.println("Switch 2b pressed");
       // Call Motion function depending on the current state of the LED
-
+      digitalWrite(SWLed, HIGH);
       if (ledState == HIGH) {
         for (int x = 1; x < 2; x++) {
           Serial.println("Motion");
@@ -553,7 +555,9 @@ void log() {
 
 void motion() {
 
-  digitalWrite(SWLed, HIGH);
+  delay(1000);
+
+  digitalWrite(SWLed, LOW);
 
 
   while (toogleSWITCH == 0) {
@@ -629,6 +633,8 @@ void motion() {
 }
 
 void noMotion() {
+
+  delay(3000);
 
   digitalWrite(SWLed, LOW);
 
