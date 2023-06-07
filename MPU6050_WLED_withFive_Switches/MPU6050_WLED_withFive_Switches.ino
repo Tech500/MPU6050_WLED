@@ -345,7 +345,7 @@ void setup() {
 
   while (!Serial) {};
 
-  Serial.print("\n\n\nMPU6050_WLED_withFive_Switches_Log_04131700.ino  04/26/2023 1039 EDT\n\n\n");
+  Serial.print("\n\n\nMPU6050_WLED_withFive_Switches.ino  04/26/2023 1039 EDT\n\n\n");
 
   delay(1000);
 
