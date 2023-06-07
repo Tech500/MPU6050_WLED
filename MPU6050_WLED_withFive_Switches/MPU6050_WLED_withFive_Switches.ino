@@ -1,6 +1,6 @@
 /*
 
-    "MPU6050_WLED_withFive_Switches.ino  04/26/2023 10:39 EDT"  Adding Pause for sending of URLs.  Moved switch testing to a standalone sketch.
+    "MPU6050_WLED_withFive_Switches.ino"  04/26/2023 1039 EDT"  Adding Pause for sending of URLs.  Moved switch testing to a standalone sketch.
 
     Developed by William Lucid with an assist from OpenAI's ChatGPT 03/10/2023 @ 01:00 EST.  Only partially finished; has not been added directly to running WLED, project 
     is a work-in-progress.  Will need a usermod to be added and compiled for WLED.  Sketch was developed to generate varialbles for effects, Intensity, and color 
@@ -345,7 +345,7 @@ void setup() {
 
   while (!Serial) {};
 
-  Serial.print("\n\n\nMPU6050_WLED_withFive_Switches_Log_04131700.ino  04/13/2023 1700 EDT\n\n\n");
+  Serial.print("\n\n\nMPU6050_WLED_withFive_Switches_Log_04131700.ino  04/26/2023 1039 EDT\n\n\n");
 
   delay(1000);
 
