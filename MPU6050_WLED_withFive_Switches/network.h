@@ -1,5 +1,5 @@
-const char* ssid = "R2D2";
-const char* password = "sissy4357";
+const char* ssid = "yourSSID";
+const char* password = "yourPASSWORD";
 
 // Change the IP address and port number to match WLED Controller
 String WLED_IP_ADDRESS = "http://10.0.0.9";
